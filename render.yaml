@@ -22,10 +22,9 @@ services:
     dockerContext: ./auth-service
     plan: free
     healthCheckPath: /actuator/health/readiness
-    disk: { name: auth-data, mountPath: /app/data, sizeGB: 1 }
     envVars:
       - { key: SERVER_PORT, value: 9091 }
-      - { key: H2_FILE_PATH, value: /app/data/authdb }
+      - { key: H2_FILE_PATH, value: /tmp/authdb }
       - { key: JWT_SECRET, sync: false }
 
   - type: web
@@ -35,10 +34,9 @@ services:
     dockerContext: ./shortener-service
     plan: free
     healthCheckPath: /actuator/health/readiness
-    disk: { name: shortener-data, mountPath: /app/data, sizeGB: 1 }
     envVars:
       - { key: SERVER_PORT, value: 9092 }
-      - { key: H2_FILE_PATH, value: /app/data/urlshortener }
+      - { key: H2_FILE_PATH, value: /tmp/urlshortener }
       - { key: SPRING_RABBITMQ_ADDRESSES, sync: false }
       - { key: SPRING_DATA_REDIS_URL, sync: false }
       - { key: APP_BASE_URL, sync: false }
@@ -49,8 +47,7 @@ services:
     dockerfilePath: ./analytics-consumer/Dockerfile
     dockerContext: ./analytics-consumer
     plan: free
-    disk: { name: analytics-data, mountPath: /app/data, sizeGB: 1 }
     envVars:
       - { key: SERVER_PORT, value: 9093 }
-      - { key: H2_FILE_PATH, value: /app/data/analytics }
+      - { key: H2_FILE_PATH, value: /tmp/analytics }
       - { key: SPRING_RABBITMQ_ADDRESSES, sync: false }

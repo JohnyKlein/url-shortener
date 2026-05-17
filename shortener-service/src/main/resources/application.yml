@@ -13,16 +13,17 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
-      hibernate.dialect: org.hibernate.dialect.H2Dialect
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
   h2:
     console:
       enabled: true
       path: /h2-console
   data:
     redis:
-      url: ${SPRING_DATA_REDIS_URL:redis://localhost:6379}
+      url: ${SPRING_DATA_REDIS_URL}
   rabbitmq:
-    addresses: ${SPRING_RABBITMQ_ADDRESSES:amqp://guest:guest@localhost:5672}
+    addresses: ${SPRING_RABBITMQ_ADDRESSES}
 
 app:
   shortener:
