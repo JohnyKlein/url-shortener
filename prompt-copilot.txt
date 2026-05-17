@@ -1,0 +1,481 @@
+Projeto: Enterprise URL Shortener Platform
+
+Crie um projeto moderno de encurtador de URLs com arquitetura baseada em microsserviços utilizando Java 21, Spring Boot 3, RabbitMQ, API Gateway, Redis, H2 persistido em arquivo, CI/CD completo, GitHub integrado e deploy gratuito.
+
+O objetivo é criar um projeto de portfólio profissional com:
+
+microsserviços
+mensageria
+cache distribuído
+autenticação JWT
+observabilidade
+deploy real online
+integração GitHub
+arquitetura preparada para Kubernetes no futuro
+
+O projeto deve parecer:
+
+moderno
+enterprise
+cloud-native
+resiliente
+pronto para evolução futura
+Repositório GitHub
+
+O projeto deve ser estruturado para publicação profissional no GitHub.
+
+Requisitos:
+
+commits organizados
+README profissional
+GitHub Actions
+badges CI/CD
+documentação clara
+screenshots
+estrutura limpa
+.gitignore adequado
+LICENSE MIT
+issues template
+pull request template
+
+Adicionar:
+
+.github/
+├── workflows/
+│   └── ci.yml
+├── ISSUE_TEMPLATE/
+└── pull_request_template.md
+
+O projeto deve estar preparado para:
+
+deploy automático via GitHub
+integração contínua
+integração com Render
+integração com Vercel
+Deploy obrigatório
+Backend Java
+
+Utilizar:
+
+Render
+
+Deploy deve ser realizado diretamente via integração GitHub + Render.
+
+Cada serviço deve possuir:
+
+Dockerfile
+variáveis de ambiente
+readiness endpoint
+RabbitMQ
+
+Utilizar:
+
+CloudAMQP
+
+A aplicação deve utilizar:
+
+connection string AMQP externa
+Redis
+
+Utilizar:
+
+Upstash Redis
+
+A aplicação deve utilizar:
+
+Redis remoto
+variáveis de ambiente
+Frontend
+
+Utilizar:
+
+Vercel
+
+Deploy realizado via integração GitHub + Vercel.
+
+Banco
+
+Utilizar inicialmente:
+
+H2 Database persistido em arquivo
+
+Modo:
+
+jdbc:h2:file:./data/urlshortener
+
+Objetivos:
+
+simplicidade
+zero custo
+facilidade de setup
+rápida evolução
+Objetivos do sistema
+
+O sistema deve:
+
+encurtar URLs
+redirecionar URLs encurtadas
+registrar analytics
+processar eventos assíncronos com RabbitMQ
+utilizar API Gateway
+possuir autenticação JWT
+possuir cache Redis
+possuir observabilidade básica
+possuir tracing distribuído simples
+possuir CI/CD
+possuir deploy online público
+possuir documentação profissional
+Stack obrigatória
+Backend
+Java 21
+Spring Boot 3
+Maven
+Infra
+Docker
+Docker Compose
+RabbitMQ
+Redis
+H2 Database
+Segurança
+Spring Security
+JWT
+Gateway
+Spring Cloud Gateway
+Observabilidade
+Spring Actuator
+Micrometer
+Zipkin
+Frontend
+Next.js
+Tailwind
+Deploy
+Render
+CloudAMQP
+Upstash
+Vercel
+Versionamento
+Git
+GitHub
+CI/CD
+GitHub Actions
+Documentação
+Swagger/OpenAPI
+Arquitetura
+
+Utilizar arquitetura de microsserviços.
+
+Serviços
+1. api-gateway
+
+Responsável por:
+
+roteamento
+autenticação JWT
+logs
+rate limiting
+correlation-id
+
+Utilizar:
+
+Spring Cloud Gateway
+2. auth-service
+
+Responsável por:
+
+login
+registro
+JWT
+
+Endpoints:
+
+POST /auth/register
+POST /auth/login
+
+Roles:
+
+USER
+ADMIN
+
+JWT deve conter:
+
+userId
+roles
+3. shortener-service
+
+Responsável por:
+
+gerar URLs curtas
+redirect
+analytics
+cache Redis
+
+Endpoints:
+
+POST /api/shorten
+GET /{shortCode}
+GET /api/analytics/{shortCode}
+4. analytics-consumer
+
+Responsável por:
+
+consumir eventos RabbitMQ
+salvar analytics
+processar eventos assíncronos
+
+Fila:
+
+shortener.analytics.queue
+Regras obrigatórias
+Limite de URLs
+
+Usuário autenticado pode criar:
+
+no máximo 2 URLs por requisição
+
+Retorno esperado:
+
+{
+  "message": "Maximum number of URLs per request is 2"
+}
+Rate limiting
+
+Implementar:
+
+limite por usuário
+limite por IP
+
+Sugestão:
+
+10 requests/min
+
+Utilizar:
+
+Redis
+Bucket4j
+URLs únicas
+
+Formato:
+
+abc123
+xYz789
+
+Utilizar:
+
+Base62
+UUID parcial
+Expiração opcional
+
+Usuário pode:
+
+definir expiração
+ou deixar permanente
+RabbitMQ
+
+Implementar:
+
+producer no shortener-service
+consumer dedicado
+retry
+dead letter queue (DLQ)
+
+Estrutura:
+
+exchange
+routing key
+queue
+DLQ
+
+Evento:
+
+{
+  "shortCode": "abc123",
+  "timestamp": "2026-05-15T12:00:00",
+  "ip": "127.0.0.1",
+  "userAgent": "Mozilla"
+}
+Redis
+
+Utilizar para:
+
+cache de redirects
+rate limiting
+analytics rápidos
+Observabilidade
+
+Adicionar:
+
+Spring Actuator
+
+Endpoints:
+
+/actuator/health
+/actuator/metrics
+Micrometer
+
+Adicionar métricas:
+
+URLs criadas
+redirects
+falhas
+latência
+Tracing distribuído simples
+
+Implementar:
+
+traceId
+correlation-id
+Zipkin
+
+Cada request deve possuir:
+
+traceId
+requestId
+Logs estruturados
+
+Formato JSON contendo:
+
+timestamp
+level
+traceId
+correlationId
+Docker
+
+Criar:
+
+Dockerfile para cada serviço
+docker-compose.yml
+
+Containers locais:
+
+gateway
+auth-service
+shortener-service
+analytics-consumer
+redis
+rabbitmq
+zipkin
+
+Adicionar persistência H2:
+
+volumes:
+  - h2-data:/app/data
+Kubernetes (PREPARAÇÃO FUTURA)
+
+O projeto deve ser preparado para Kubernetes futuramente.
+
+Criar pasta:
+
+k8s/
+
+Adicionar manifests básicos:
+
+deployment
+service
+ingress
+configmap
+
+Mesmo que inicialmente não sejam utilizados em produção.
+
+CI/CD
+
+Criar pipeline GitHub Actions.
+
+Pipeline deve:
+
+rodar testes
+validar build Maven
+buildar Docker image
+validar lint/checkstyle
+publicar status badge
+
+Arquivo:
+
+.github/workflows/ci.yml
+Frontend
+
+Criar frontend simples utilizando:
+
+Next.js
+Tailwind
+
+Funcionalidades:
+
+login
+criar URL curta
+visualizar analytics
+listar URLs criadas
+
+Deploy:
+
+Vercel
+README obrigatório
+
+README deve conter:
+
+README
+├── Arquitetura
+├── Stack
+├── Como rodar
+├── Variáveis de ambiente
+├── GitHub
+├── Deploy
+├── CloudAMQP
+├── Upstash
+├── Render
+├── Vercel
+├── Observabilidade
+├── Tracing
+├── Kubernetes
+├── Screenshots
+├── Deploy URL
+├── Swagger
+├── Docker
+├── Persistência H2
+└── CI/CD
+Estrutura esperada
+url-shortener-platform/
+│
+├── .github/
+├── api-gateway/
+├── auth-service/
+├── shortener-service/
+├── analytics-consumer/
+├── frontend/
+├── docker-compose.yml
+├── k8s/
+├── README.md
+├── LICENSE
+└── data/
+Qualidade do código
+
+Utilizar:
+
+Clean Architecture
+SOLID
+DTOs
+validações
+tratamento global de exceções
+logs estruturados
+padrão Response API
+Diferenciais desejáveis
+
+Se possível adicionar:
+
+Testcontainers
+OpenFeign
+MapStruct
+Resilience4j
+retry
+circuit breaker
+correlation-id middleware
+distributed cache strategy
+Objetivo final
+
+O projeto deve parecer:
+
+um sistema enterprise real
+moderno
+resiliente
+observável
+preparado para escala
+excelente para portfólio backend/cloud senior.

@@ -1,0 +1,52 @@
+server:
+  port: ${SERVER_PORT:9090}
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL:redis://localhost:6379}
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: ${RATE_LIMIT_PER_MINUTE:10}
+            redis-rate-limiter.burstCapacity: 20
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@compositeKeyResolver}"
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URI:http://localhost:9091}
+          predicates:
+            - Path=/auth/**
+        - id: shortener-api
+          uri: ${SHORTENER_SERVICE_URI:http://localhost:9092}
+          predicates:
+            - Path=/api/**
+        - id: shortener-redirect
+          uri: ${SHORTENER_SERVICE_URI:http://localhost:9092}
+          predicates:
+            - Path=/r/**
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-super-secret-key-please-rotate-me-32bytes-min}
+  security:
+    public-paths: /public/**,/auth/**,/r/**,/actuator/**,/api/shorten
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

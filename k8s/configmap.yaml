@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: url-shortener-config
+  namespace: url-shortener
+data:
+  RATE_LIMIT_PER_MINUTE: "10"
+  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+  AUTH_SERVICE_URI: "http://auth-service:9091"
+  SHORTENER_SERVICE_URI: "http://shortener-service:9092"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: url-shortener-secrets
+  namespace: url-shortener
+type: Opaque
+stringData:
+  JWT_SECRET: "change-me-super-secret-key-please-rotate-me-32bytes-min"
+  SPRING_RABBITMQ_ADDRESSES: "amqp://guest:guest@rabbitmq:5672"
+  SPRING_DATA_REDIS_URL: "redis://redis:6379"

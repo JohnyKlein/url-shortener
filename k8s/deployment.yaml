@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: url-shortener
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: url-shortener
+  labels: { app: api-gateway }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: api-gateway } }
+  template:
+    metadata: { labels: { app: api-gateway } }
+    spec:
+      containers:
+        - name: api-gateway
+          image: ghcr.io/your-user/url-shortener-api-gateway:latest
+          ports: [{ containerPort: 9090 }]
+          envFrom:
+            - configMapRef: { name: url-shortener-config }
+            - secretRef: { name: url-shortener-secrets }
+          env: [{ name: SERVER_PORT, value: "9090" }]
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: 9090 }
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: 9090 }
+            initialDelaySeconds: 40
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: auth-service, namespace: url-shortener, labels: { app: auth-service } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: auth-service } }
+  template:
+    metadata: { labels: { app: auth-service } }
+    spec:
+      containers:
+        - name: auth-service
+          image: ghcr.io/your-user/url-shortener-auth-service:latest
+          ports: [{ containerPort: 9091 }]
+          envFrom:
+            - configMapRef: { name: url-shortener-config }
+            - secretRef:    { name: url-shortener-secrets }
+          env:
+            - { name: SERVER_PORT, value: "9091" }
+            - { name: H2_FILE_PATH, value: "/app/data/authdb" }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes: [{ name: data, emptyDir: {} }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: shortener-service, namespace: url-shortener, labels: { app: shortener-service } }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: shortener-service } }
+  template:
+    metadata: { labels: { app: shortener-service } }
+    spec:
+      containers:
+        - name: shortener-service
+          image: ghcr.io/your-user/url-shortener-shortener-service:latest
+          ports: [{ containerPort: 9092 }]
+          envFrom:
+            - configMapRef: { name: url-shortener-config }
+            - secretRef:    { name: url-shortener-secrets }
+          env:
+            - { name: SERVER_PORT, value: "9092" }
+            - { name: H2_FILE_PATH, value: "/app/data/urlshortener" }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes: [{ name: data, emptyDir: {} }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: analytics-consumer, namespace: url-shortener, labels: { app: analytics-consumer } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: analytics-consumer } }
+  template:
+    metadata: { labels: { app: analytics-consumer } }
+    spec:
+      containers:
+        - name: analytics-consumer
+          image: ghcr.io/your-user/url-shortener-analytics-consumer:latest
+          ports: [{ containerPort: 9093 }]
+          envFrom:
+            - configMapRef: { name: url-shortener-config }
+            - secretRef:    { name: url-shortener-secrets }
+          env:
+            - { name: SERVER_PORT, value: "9093" }
+            - { name: H2_FILE_PATH, value: "/app/data/analytics" }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes: [{ name: data, emptyDir: {} }]

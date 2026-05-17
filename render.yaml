@@ -1,0 +1,57 @@
+# Render Blueprint — deploys all 4 backend services from this repo
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: api-gateway
+    env: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    healthCheckPath: /actuator/health/readiness
+    envVars:
+      - { key: SERVER_PORT, value: 9090 }
+      - { key: JWT_SECRET, sync: false }
+      - { key: SPRING_DATA_REDIS_URL, sync: false }
+      - { key: AUTH_SERVICE_URI, sync: false }
+      - { key: SHORTENER_SERVICE_URI, sync: false }
+      - { key: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, sync: false }
+
+  - type: web
+    name: auth-service
+    env: docker
+    dockerfilePath: ./auth-service/Dockerfile
+    dockerContext: ./auth-service
+    plan: free
+    healthCheckPath: /actuator/health/readiness
+    disk: { name: auth-data, mountPath: /app/data, sizeGB: 1 }
+    envVars:
+      - { key: SERVER_PORT, value: 9091 }
+      - { key: H2_FILE_PATH, value: /app/data/authdb }
+      - { key: JWT_SECRET, sync: false }
+
+  - type: web
+    name: shortener-service
+    env: docker
+    dockerfilePath: ./shortener-service/Dockerfile
+    dockerContext: ./shortener-service
+    plan: free
+    healthCheckPath: /actuator/health/readiness
+    disk: { name: shortener-data, mountPath: /app/data, sizeGB: 1 }
+    envVars:
+      - { key: SERVER_PORT, value: 9092 }
+      - { key: H2_FILE_PATH, value: /app/data/urlshortener }
+      - { key: SPRING_RABBITMQ_ADDRESSES, sync: false }
+      - { key: SPRING_DATA_REDIS_URL, sync: false }
+      - { key: APP_BASE_URL, sync: false }
+
+  - type: worker
+    name: analytics-consumer
+    env: docker
+    dockerfilePath: ./analytics-consumer/Dockerfile
+    dockerContext: ./analytics-consumer
+    plan: free
+    disk: { name: analytics-data, mountPath: /app/data, sizeGB: 1 }
+    envVars:
+      - { key: SERVER_PORT, value: 9093 }
+      - { key: H2_FILE_PATH, value: /app/data/analytics }
+      - { key: SPRING_RABBITMQ_ADDRESSES, sync: false }

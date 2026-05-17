@@ -1,0 +1,64 @@
+server:
+  port: ${SERVER_PORT:9092}
+
+spring:
+  application:
+    name: shortener-service
+  datasource:
+    url: jdbc:h2:file:${H2_FILE_PATH:./data/urlshortener};AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL:redis://localhost:6379}
+  rabbitmq:
+    addresses: ${SPRING_RABBITMQ_ADDRESSES:amqp://guest:guest@localhost:5672}
+
+app:
+  shortener:
+    base-url: ${APP_BASE_URL:http://localhost:9090/r}
+    max-urls-per-request: 2
+  rate-limit:
+    requests-per-minute: ${RATE_LIMIT_PER_MINUTE:10}
+  rabbit:
+    exchange: shortener.events
+    routing-key: shortener.analytics
+    queue: shortener.analytics.queue
+    dlq: shortener.analytics.dlq
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+resilience4j:
+  retry:
+    instances:
+      analyticsPublisher:
+        max-attempts: 3
+        wait-duration: 500ms
+  circuitbreaker:
+    instances:
+      analyticsPublisher:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
