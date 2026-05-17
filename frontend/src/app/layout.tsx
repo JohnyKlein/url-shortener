@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import { Header } from './header';
 import { Footer } from './footer';
 import { AuthModal } from './auth-modal';
+import { Disclaimer } from './disclaimer';
 
 export const metadata: Metadata = {
   title: 'URL Shortener Platform',
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <Header />
+              <Disclaimer />
               <AuthModal />
               <main className="flex-1 px-6 py-8 max-w-5xl mx-auto w-full">{children}</main>
               <Footer />

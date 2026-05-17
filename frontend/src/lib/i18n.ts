@@ -38,6 +38,8 @@ export interface Messages {
   discard: string;
   saveFailed: string;
   urlLimitReached: string;
+  disclaimerTitle: string;
+  disclaimerText: string;
 }
 
 const en: Messages = {
@@ -78,9 +80,9 @@ const en: Messages = {
   discard: 'Discard',
   saveFailed: 'Failed to save URL',
   urlLimitReached: 'You have reached the limit of 2 URLs. Delete one to create a new one.',
-};
-
-const pt: Messages = {
+  disclaimerTitle: 'Demo environment',
+  disclaimerText: 'This project runs on free-tier services (Render, Upstash, CloudAMQP). Cold starts may cause delays up to 30 s and data is not persisted between restarts.',
+};: Messages = {
   signIn: 'Entrar',
   login: 'Login',
   register: 'Registrar',
@@ -118,6 +120,8 @@ const pt: Messages = {
   discard: 'Descartar',
   saveFailed: 'Falha ao salvar URL',
   urlLimitReached: 'Você atingiu o limite de 2 URLs. Exclua uma para criar outra.',
+  disclaimerTitle: 'Ambiente de demonstração',
+  disclaimerText: 'Este projeto roda em serviços gratuitos (Render, Upstash, CloudAMQP). Cold starts podem causar atrasos de até 30 s e os dados não são persistidos entre reinicializações.',
 };
 
 const messages: Record<Locale, Messages> = { en, pt };
