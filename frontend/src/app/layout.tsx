@@ -1,8 +1,10 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { I18nProvider } from '@/lib/i18n-context';
+import { AuthProvider } from '@/lib/auth-context';
 import { Header } from './header';
 import { Footer } from './footer';
+import { AuthModal } from './auth-modal';
 
 export const metadata: Metadata = {
   title: 'URL Shortener Platform',
@@ -14,11 +16,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
         <I18nProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 px-6 py-8 max-w-5xl mx-auto w-full">{children}</main>
-            <Footer />
-          </div>
+          <AuthProvider>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <AuthModal />
+              <main className="flex-1 px-6 py-8 max-w-5xl mx-auto w-full">{children}</main>
+              <Footer />
+            </div>
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>

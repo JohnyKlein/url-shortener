@@ -14,7 +14,6 @@ services:
       - { key: SPRING_DATA_REDIS_URL, sync: false }
       - { key: AUTH_SERVICE_URI, sync: false }
       - { key: SHORTENER_SERVICE_URI, sync: false }
-      - { key: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, sync: false }
 
   - type: web
     name: auth-service

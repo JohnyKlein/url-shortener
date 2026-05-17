@@ -28,7 +28,15 @@ export interface Messages {
   footer: string;
   previewBadge: string;
   previewNotice: string;
+  previewNoticeStart: string;
+  previewNoticeEnd: string;
   signInToSave: string;
+  pendingPreviews: string;
+  pendingPreviewsNotice: string;
+  save: string;
+  saveAll: string;
+  discard: string;
+  saveFailed: string;
 }
 
 const en: Messages = {
@@ -59,7 +67,15 @@ const en: Messages = {
   footer: 'Built with Spring Boot 3 · Next.js · Redis · RabbitMQ — by',
   previewBadge: 'Preview',
   previewNotice: 'This is a preview — the link will not work. Sign in to save your URLs.',
+  previewNoticeStart: 'This is a preview \u2014 the link will not work.',
+  previewNoticeEnd: 'to save your URLs.',
   signInToSave: 'Sign in to save',
+  pendingPreviews: 'Pending previews',
+  pendingPreviewsNotice: 'These URLs were created before you signed in. Save them to keep them.',
+  save: 'Save',
+  saveAll: 'Save all',
+  discard: 'Discard',
+  saveFailed: 'Failed to save URL',
 };
 
 const pt: Messages = {
@@ -90,7 +106,15 @@ const pt: Messages = {
   footer: 'Feito com Spring Boot 3 · Next.js · Redis · RabbitMQ — por',
   previewBadge: 'Prévia',
   previewNotice: 'Esta é uma prévia — o link não funcionará. Entre para salvar suas URLs.',
+  previewNoticeStart: 'Esta é uma prévia \u2014 o link não funcionará.',
+  previewNoticeEnd: 'para salvar suas URLs.',
   signInToSave: 'Entrar para salvar',
+  pendingPreviews: 'Prévias pendentes',
+  pendingPreviewsNotice: 'Estas URLs foram criadas antes do login. Salve-as para mantê-las.',
+  save: 'Salvar',
+  saveAll: 'Salvar todas',
+  discard: 'Descartar',
+  saveFailed: 'Falha ao salvar URL',
 };
 
 const messages: Record<Locale, Messages> = { en, pt };

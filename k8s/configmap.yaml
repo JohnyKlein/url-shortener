@@ -6,7 +6,6 @@ metadata:
 data:
   RATE_LIMIT_PER_MINUTE: "10"
   MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
-  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: "http://zipkin:9411/api/v2/spans"
   AUTH_SERVICE_URI: "http://auth-service:9091"
   SHORTENER_SERVICE_URI: "http://shortener-service:9092"
 ---

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError, AuthResponse, ShortUrl } from '@/lib/api';
 
 const AUTH_STORAGE_KEY = 'auth';
+const PREVIEW_STORAGE_KEY = 'previewUrls';
 
 function getStoredAuth(): AuthResponse | null {
   if (typeof window === 'undefined') return null;
@@ -17,6 +18,59 @@ function getStoredAuth(): AuthResponse | null {
     localStorage.removeItem(AUTH_STORAGE_KEY);
     return null;
   }
+}
+
+function getStoredPreviews(): ShortUrl[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(PREVIEW_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ShortUrl[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    localStorage.removeItem(PREVIEW_STORAGE_KEY);
+    return [];
+  }
+}
+
+function storePreviews(urls: ShortUrl[]): void {
+  if (typeof window === 'undefined') return;
+  if (urls.length === 0) {
+    localStorage.removeItem(PREVIEW_STORAGE_KEY);
+  } else {
+    localStorage.setItem(PREVIEW_STORAGE_KEY, JSON.stringify(urls));
+  }
+}
+
+export function usePreviewUrls() {
+  const [previews, setPreviews] = useState<ShortUrl[]>([]);
+
+  useEffect(() => {
+    setPreviews(getStoredPreviews());
+  }, []);
+
+  const addPreviews = useCallback((newUrls: ShortUrl[]) => {
+    setPreviews(prev => {
+      const next = [...newUrls, ...prev];
+      storePreviews(next);
+      return next;
+    });
+  }, []);
+
+  const removePreview = useCallback((shortCode: string) => {
+    setPreviews(prev => {
+      const next = prev.filter(u => u.shortCode !== shortCode);
+      storePreviews(next);
+      return next;
+    });
+  }, []);
+
+  const clearPreviews = useCallback(() => {
+    setPreviews([]);
+    storePreviews([]);
+  }, []);
+
+  return { previews, addPreviews, removePreview, clearPreviews };
 }
 
 export function useAuth() {
@@ -56,7 +110,10 @@ export function useUrls(token: string | undefined) {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchUrls = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setUrls([]);
+      return;
+    }
     setIsLoading(true);
     try {
       const data = await api.myUrls(token);
@@ -79,7 +136,11 @@ export function useUrls(token: string | undefined) {
   }, [fetchUrls]);
 
   const addUrls = useCallback((newUrls: ShortUrl[]) => {
-    setUrls(prev => [...newUrls, ...prev]);
+    setUrls(prev => {
+      const map = new Map<string, ShortUrl>();
+      [...newUrls, ...prev].forEach(u => map.set(u.shortCode, u));
+      return Array.from(map.values());
+    });
   }, []);
 
   const removeUrl = useCallback((shortCode: string) => {

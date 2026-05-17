@@ -2,13 +2,15 @@
 
 import { FormEvent, useState } from 'react';
 import { api, ShortUrl } from '@/lib/api';
-import { useAuth, useUrls } from '@/lib/hooks';
+import { usePreviewUrls, useUrls } from '@/lib/hooks';
+import { useAuthContext } from '@/lib/auth-context';
 import { useI18n } from '@/lib/i18n-context';
-import { Link, LogOut, Scissors, Trash2, ExternalLink, Loader2 } from 'lucide-react';
+import { Link, Scissors, Trash2, ExternalLink, Loader2, Save, X } from 'lucide-react';
 
 export default function Home() {
-  const { auth, loading, login, register, logout } = useAuth();
+  const { auth, loading } = useAuthContext();
   const { urls, error, setError, addUrls, removeUrl, incrementHits } = useUrls(auth?.accessToken);
+  const { previews, addPreviews, removePreview, clearPreviews } = usePreviewUrls();
   const { t } = useI18n();
 
   if (loading) {
@@ -24,7 +26,7 @@ export default function Home() {
       <div className="space-y-8">
         <ShortenForm
           token={null}
-          onCreated={addUrls}
+          onCreated={addPreviews}
           onError={setError}
         />
         {error && (
@@ -32,25 +34,42 @@ export default function Home() {
             {error}
           </div>
         )}
-        {urls.length > 0 && (
-          <PreviewList urls={urls} />
+        {previews.length > 0 && (
+          <PreviewList urls={previews} onDiscard={removePreview} />
         )}
-        <AuthForm onLogin={login} onRegister={register} />
       </div>
     );
   }
 
+  const handleSavePreview = async (preview: ShortUrl) => {
+    setError(null);
+    try {
+      const created = await api.shorten(auth.accessToken, [{ url: preview.originalUrl }]);
+      addUrls(created);
+      removePreview(preview.shortCode);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t.saveFailed);
+      throw e;
+    }
+  };
+
+  const handleSaveAllPreviews = async () => {
+    if (previews.length === 0) return;
+    setError(null);
+    try {
+      const created = await api.shorten(
+        auth.accessToken,
+        previews.map(p => ({ url: p.originalUrl }))
+      );
+      addUrls(created);
+      clearPreviews();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t.saveFailed);
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-slate-400">
-          {t.hello}, <span className="text-slate-100">{auth.email}</span>
-        </p>
-        <button onClick={logout} className="text-sm text-slate-400 hover:text-red-400 flex items-center gap-1">
-          <LogOut className="w-3.5 h-3.5" /> {t.logout}
-        </button>
-      </div>
-
       <ShortenForm
         token={auth.accessToken}
         onCreated={addUrls}
@@ -61,6 +80,15 @@ export default function Home() {
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-2 rounded-lg">
           {error}
         </div>
+      )}
+
+      {previews.length > 0 && (
+        <PendingPreviewList
+          urls={previews}
+          onSave={handleSavePreview}
+          onDiscard={removePreview}
+          onSaveAll={handleSaveAllPreviews}
+        />
       )}
 
       <UrlTable
@@ -74,20 +102,35 @@ export default function Home() {
   );
 }
 
-function PreviewList({ urls }: { urls: ShortUrl[] }) {
+function PreviewList({ urls, onDiscard }: { urls: ShortUrl[]; onDiscard: (shortCode: string) => void }) {
   const { t } = useI18n();
+  const { openAuthModal } = useAuthContext();
   return (
     <div className="bg-slate-900 p-6 rounded-xl shadow-lg space-y-3">
       <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm px-3 py-2 rounded">
-        {t.previewNotice}
+        {t.previewNoticeStart}{' '}
+        <button
+          onClick={openAuthModal}
+          className="underline text-amber-200 hover:text-amber-100 font-medium"
+        >
+          {t.signIn}
+        </button>{' '}
+        {t.previewNoticeEnd}
       </div>
       <ul className="space-y-2 text-sm">
         {urls.map(u => (
-          <li key={u.shortCode} className="flex items-center justify-between border-t border-slate-800 pt-2">
-            <span className="text-slate-400 truncate max-w-[60%]" title={u.originalUrl}>{u.originalUrl}</span>
+          <li key={u.shortCode} className="flex items-center justify-between border-t border-slate-800 pt-2 gap-2">
+            <span className="text-slate-400 truncate max-w-[55%]" title={u.originalUrl}>{u.originalUrl}</span>
             <span className="inline-flex items-center gap-2">
               <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">{t.previewBadge}</span>
               <span className="text-brand font-mono">{u.shortCode}</span>
+              <button
+                onClick={() => onDiscard(u.shortCode)}
+                className="text-slate-400 hover:text-red-400"
+                title={t.discard}
+              >
+                <X className="w-4 h-4" />
+              </button>
             </span>
           </li>
         ))}
@@ -96,66 +139,81 @@ function PreviewList({ urls }: { urls: ShortUrl[] }) {
   );
 }
 
-function AuthForm({ onLogin, onRegister }: {
-  onLogin: (email: string, password: string) => Promise<unknown>;
-  onRegister: (email: string, password: string) => Promise<unknown>;
+function PendingPreviewList({ urls, onSave, onDiscard, onSaveAll }: {
+  urls: ShortUrl[];
+  onSave: (preview: ShortUrl) => Promise<void>;
+  onDiscard: (shortCode: string) => void;
+  onSaveAll: () => Promise<void>;
 }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const { t } = useI18n();
+  const [saving, setSaving] = useState<string | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
 
-  const handleSubmit = async (mode: 'login' | 'register') => {
-    setError(null);
-    setSubmitting(true);
+  const handleSave = async (preview: ShortUrl) => {
+    setSaving(preview.shortCode);
     try {
-      await (mode === 'login' ? onLogin(email, password) : onRegister(email, password));
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t.authFailed);
+      await onSave(preview);
+    } catch {
+      // error surfaced by parent
     } finally {
-      setSubmitting(false);
+      setSaving(null);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSavingAll(true);
+    try {
+      await onSaveAll();
+    } finally {
+      setSavingAll(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto bg-slate-900 p-6 rounded-xl shadow-lg space-y-4">
-      <h2 className="text-2xl font-semibold">{t.signIn}</h2>
-      {error && <div className="text-red-400 text-sm">{error}</div>}
-      <input
-        className="w-full bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
-        placeholder={t.email}
-        type="email"
-        autoComplete="email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        disabled={submitting}
-      />
-      <input
-        className="w-full bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
-        type="password"
-        placeholder={t.password}
-        autoComplete="current-password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        disabled={submitting}
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleSubmit('login')}
-          disabled={submitting}
-          className="flex-1 bg-brand hover:bg-brand-dark py-2 rounded font-medium disabled:opacity-50"
-        >
-          {submitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t.login}
-        </button>
-        <button
-          onClick={() => handleSubmit('register')}
-          disabled={submitting}
-          className="flex-1 bg-slate-700 hover:bg-slate-600 py-2 rounded font-medium disabled:opacity-50"
-        >
-          {t.register}
-        </button>
+    <div className="bg-slate-900 p-6 rounded-xl shadow-lg space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{t.pendingPreviews}</h2>
+        {urls.length > 1 && (
+          <button
+            onClick={handleSaveAll}
+            disabled={savingAll}
+            className="text-xs bg-brand hover:bg-brand-dark disabled:opacity-50 px-3 py-1.5 rounded font-medium inline-flex items-center gap-1"
+          >
+            {savingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            {t.saveAll}
+          </button>
+        )}
       </div>
+      <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm px-3 py-2 rounded">
+        {t.pendingPreviewsNotice}
+      </div>
+      <ul className="space-y-2 text-sm">
+        {urls.map(u => (
+          <li key={u.shortCode} className="flex items-center justify-between border-t border-slate-800 pt-2 gap-2">
+            <span className="text-slate-400 truncate max-w-[50%]" title={u.originalUrl}>{u.originalUrl}</span>
+            <span className="inline-flex items-center gap-2">
+              <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">{t.previewBadge}</span>
+              <span className="text-brand font-mono">{u.shortCode}</span>
+              <button
+                onClick={() => handleSave(u)}
+                disabled={saving === u.shortCode || savingAll}
+                className="text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+                title={t.save}
+              >
+                {saving === u.shortCode ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={() => onDiscard(u.shortCode)}
+                disabled={saving === u.shortCode || savingAll}
+                className="text-slate-400 hover:text-red-400 disabled:opacity-50"
+                title={t.discard}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
