@@ -41,12 +41,13 @@ services:
       - { key: SPRING_DATA_REDIS_URL, sync: false }
       - { key: APP_BASE_URL, sync: false }
 
-  - type: worker
+  - type: web
     name: analytics-consumer
     env: docker
     dockerfilePath: ./analytics-consumer/Dockerfile
     dockerContext: ./analytics-consumer
     plan: free
+    healthCheckPath: /actuator/health/readiness
     envVars:
       - { key: SERVER_PORT, value: 9093 }
       - { key: H2_FILE_PATH, value: /tmp/analytics }
