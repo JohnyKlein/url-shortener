@@ -41,6 +41,9 @@ public class UrlShortenerService {
     @Value("${app.shortener.max-urls-per-request}")
     private int maxUrlsPerRequest;
 
+    @Value("${app.shortener.max-urls-per-user}")
+    private int maxUrlsPerUser;
+
     private Counter createdCounter;
     private Counter redirectedCounter;
     private Counter failedCounter;
@@ -68,6 +71,12 @@ public class UrlShortenerService {
     private ShortUrlResponse createOne(ShortenRequest.UrlEntry entry, String userId) {
         try {
             boolean anonymous = userId == null || userId.isBlank();
+
+            if (!anonymous && repository.countByOwnerId(userId) >= maxUrlsPerUser) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                        "URL limit reached: maximum " + maxUrlsPerUser + " URLs per user");
+            }
+
             String code;
             int attempts = 0;
             do {

@@ -37,6 +37,7 @@ export interface Messages {
   saveAll: string;
   discard: string;
   saveFailed: string;
+  urlLimitReached: string;
 }
 
 const en: Messages = {
@@ -76,6 +77,7 @@ const en: Messages = {
   saveAll: 'Save all',
   discard: 'Discard',
   saveFailed: 'Failed to save URL',
+  urlLimitReached: 'You have reached the limit of 2 URLs. Delete one to create a new one.',
 };
 
 const pt: Messages = {
@@ -115,6 +117,7 @@ const pt: Messages = {
   saveAll: 'Salvar todas',
   discard: 'Descartar',
   saveFailed: 'Falha ao salvar URL',
+  urlLimitReached: 'Você atingiu o limite de 2 URLs. Exclua uma para criar outra.',
 };
 
 const messages: Record<Locale, Messages> = { en, pt };

@@ -14,6 +14,7 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, UUID> {
     Optional<ShortUrl> findByShortCode(String shortCode);
     boolean existsByShortCode(String shortCode);
     List<ShortUrl> findAllByOwnerIdOrderByCreatedAtDesc(String ownerId);
+    long countByOwnerId(String ownerId);
 
     @Modifying
     @Query("update ShortUrl s set s.hits = s.hits + 1 where s.shortCode = :code")

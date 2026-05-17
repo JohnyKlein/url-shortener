@@ -28,6 +28,7 @@ app:
   shortener:
     base-url: ${APP_BASE_URL:http://localhost:9090/r}
     max-urls-per-request: 2
+    max-urls-per-user: 2
   rate-limit:
     requests-per-minute: ${RATE_LIMIT_PER_MINUTE:10}
   rabbit:

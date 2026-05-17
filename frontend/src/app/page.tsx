@@ -74,6 +74,7 @@ export default function Home() {
         token={auth.accessToken}
         onCreated={addUrls}
         onError={setError}
+        limitReached={urls.length >= 2}
       />
 
       {error && (
@@ -218,10 +219,11 @@ function PendingPreviewList({ urls, onSave, onDiscard, onSaveAll }: {
   );
 }
 
-function ShortenForm({ token, onCreated, onError }: {
+function ShortenForm({ token, onCreated, onError, limitReached = false }: {
   token: string | null;
   onCreated: (urls: ShortUrl[]) => void;
   onError: (msg: string | null) => void;
+  limitReached?: boolean;
 }) {
   const [url, setUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -248,24 +250,30 @@ function ShortenForm({ token, onCreated, onError }: {
       <h2 className="text-xl font-semibold flex items-center gap-2">
         <Scissors className="w-5 h-5 text-brand" /> {t.shortenUrl}
       </h2>
-      <div className="flex gap-2">
-        <input
-          className="flex-1 bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
-          placeholder={t.placeholder}
-          type="url"
-          value={url}
-          onChange={e => setUrl(e.target.value)}
-          required
-          disabled={submitting}
-        />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-brand hover:bg-brand-dark px-4 py-2 rounded font-medium disabled:opacity-50"
-        >
-          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.shorten}
-        </button>
-      </div>
+      {limitReached ? (
+        <p className="text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded">
+          {t.urlLimitReached}
+        </p>
+      ) : (
+        <div className="flex gap-2">
+          <input
+            className="flex-1 bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
+            placeholder={t.placeholder}
+            type="url"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            required
+            disabled={submitting}
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-brand hover:bg-brand-dark px-4 py-2 rounded font-medium disabled:opacity-50"
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.shorten}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
