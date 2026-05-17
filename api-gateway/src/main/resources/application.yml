@@ -16,6 +16,15 @@ spring:
             redis-rate-limiter.burstCapacity: 20
             redis-rate-limiter.requestedTokens: 1
             key-resolver: "#{@compositeKeyResolver}"
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "${ALLOWED_ORIGIN:http://localhost:3000}"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
       routes:
         - id: auth-service
           uri: ${AUTH_SERVICE_URI:http://localhost:9091}
