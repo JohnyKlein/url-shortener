@@ -257,7 +257,7 @@ function ShortenForm({ token, onCreated, onError, limitReached = false }: {
       ) : (
         <div className="flex gap-2">
           <input
-            className="flex-1 bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
+            className="flex-1 min-w-0 bg-slate-800 px-3 py-2 rounded outline-none focus:ring-2 ring-brand"
             placeholder={t.placeholder}
             type="url"
             value={url}
@@ -268,7 +268,7 @@ function ShortenForm({ token, onCreated, onError, limitReached = false }: {
           <button
             type="submit"
             disabled={submitting}
-            className="bg-brand hover:bg-brand-dark px-4 py-2 rounded font-medium disabled:opacity-50"
+            className="bg-brand hover:bg-brand-dark px-4 py-2 rounded font-medium disabled:opacity-50 flex-shrink-0 whitespace-nowrap"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.shorten}
           </button>
