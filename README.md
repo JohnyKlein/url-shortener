@@ -8,6 +8,7 @@
 
 A cloud-native URL shortener platform built with microservices using Java 21, Spring Boot, and Next.js. Features JWT authentication, Redis caching, RabbitMQ asynchronous processing, Docker/Kubernetes support, and free-tier cloud deployment.
 
+🌐 Live Demo: https://url-shortener-sigma-eosin.vercel.app/
 ---
 
 ## 📐 Architecture
