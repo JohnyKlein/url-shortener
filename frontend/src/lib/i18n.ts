@@ -82,7 +82,9 @@ const en: Messages = {
   urlLimitReached: 'You have reached the limit of 2 URLs. Delete one to create a new one.',
   disclaimerTitle: 'Demo environment',
   disclaimerText: 'This project runs on free-tier services (Render, Upstash, CloudAMQP). Cold starts may cause delays up to 30 s and data is not persisted between restarts.',
-};: Messages = {
+};
+
+const pt: Messages = {
   signIn: 'Entrar',
   login: 'Login',
   register: 'Registrar',
