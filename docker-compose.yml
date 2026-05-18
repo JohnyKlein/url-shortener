@@ -7,7 +7,6 @@ x-common-env: &common-env
   JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
   SPRING_RABBITMQ_ADDRESSES: amqp://guest:guest@rabbitmq:5672
   SPRING_DATA_REDIS_URL: redis://redis:6379
-  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
 
 services:
   redis:
@@ -32,66 +31,66 @@ services:
       timeout: 5s
       retries: 5
 
-  # api-gateway:
-  #   build: ./api-gateway
-  #   container_name: us-gateway
-  #   environment:
-  #     <<: *common-env
-  #     SERVER_PORT: 9090
-  #     AUTH_SERVICE_URI: http://auth-service:9091
-  #     SHORTENER_SERVICE_URI: http://shortener-service:9092
-  #   ports: ["9090:9090"]
-  #   depends_on:
-  #     redis: { condition: service_healthy }
-  #     auth-service: { condition: service_started }
-  #     shortener-service: { condition: service_started }
+  api-gateway:
+    build: ./api-gateway
+    container_name: us-gateway
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9090
+      AUTH_SERVICE_URI: http://auth-service:9091
+      SHORTENER_SERVICE_URI: http://shortener-service:9092
+    ports: ["9090:9090"]
+    depends_on:
+      redis: { condition: service_healthy }
+      auth-service: { condition: service_started }
+      shortener-service: { condition: service_started }
 
-  # auth-service:
-  #   build: ./auth-service
-  #   container_name: us-auth
-  #   environment:
-  #     <<: *common-env
-  #     SERVER_PORT: 9091
-  #     H2_FILE_PATH: /app/data/authdb
-  #   volumes:
-  #     - h2-auth-data:/app/data
-  #   ports: ["9091:9091"]
+  auth-service:
+    build: ./auth-service
+    container_name: us-auth
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9091
+      H2_FILE_PATH: /app/data/authdb
+    volumes:
+      - h2-auth-data:/app/data
+    ports: ["9091:9091"]
 
-  # shortener-service:
-  #   build: ./shortener-service
-  #   container_name: us-shortener
-  #   environment:
-  #     <<: *common-env
-  #     SERVER_PORT: 9092
-  #     H2_FILE_PATH: /app/data/urlshortener
-  #   volumes:
-  #     - h2-data:/app/data
-  #   ports: ["9092:9092"]
-  #   depends_on:
-  #     redis: { condition: service_healthy }
-  #     rabbitmq: { condition: service_healthy }
+  shortener-service:
+    build: ./shortener-service
+    container_name: us-shortener
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9092
+      H2_FILE_PATH: /app/data/urlshortener
+    volumes:
+      - h2-data:/app/data
+    ports: ["9092:9092"]
+    depends_on:
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
 
-  # analytics-consumer:
-  #   build: ./analytics-consumer
-  #   container_name: us-analytics
-  #   environment:
-  #     <<: *common-env
-  #     SERVER_PORT: 9093
-  #     H2_FILE_PATH: /app/data/analytics
-  #   volumes:
-  #     - h2-analytics-data:/app/data
-  #   ports: ["9093:9093"]
-  #   depends_on:
-  #     rabbitmq: { condition: service_healthy }
+  analytics-consumer:
+    build: ./analytics-consumer
+    container_name: us-analytics
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9093
+      H2_FILE_PATH: /app/data/analytics
+    volumes:
+      - h2-analytics-data:/app/data
+    ports: ["9093:9093"]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
 
-  # frontend:
-  #   build: ./frontend
-  #   container_name: us-frontend
-  #   environment:
-  #     NEXT_PUBLIC_API_URL: http://localhost:9090
-  #   ports: ["3000:3000"]
-  #   depends_on:
-  #     - api-gateway
+  frontend:
+    build: ./frontend
+    container_name: us-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:9090
+    ports: ["3000:3000"]
+    depends_on:
+      - api-gateway
 
 volumes:
   h2-data:
